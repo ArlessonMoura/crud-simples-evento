@@ -1,0 +1,57 @@
+# Node.js
+node_modules/
+coverage/
+.nyc_output/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Cache and temporary files
+.cache/
+.parcel-cache/
+.tmp/
+.temp/
+*.tmp
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Package manager caches
+.pnpm-store/
+.pnpm-debug.log*
+.yarn/
+!.yarnrc.yml
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Test artifacts
+coverage/
+*.lcov
+
+# Optional: ignore local database or data files if you add them later
+# *.sqlite
+# *.db
