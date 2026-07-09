@@ -34,3 +34,10 @@ app.get("/casting", async (req, res) => {
     res.json(JSON.parse(data)).status(200);
   }
 });
+
+
+app.get("/casting/:id", async (req, res) => {
+  console.log(`Rota /casting/:id foi chamada para o id: ${req.params.id}`);
+
+  res.send("id");
+});
