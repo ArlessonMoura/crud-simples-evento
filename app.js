@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const crypto = require('crypto');
 const path = require('path');
 const { error } = require('console');
+const { json } = require('stream/consumers');
 
 const app = express();
 const port = 3000;
@@ -17,17 +18,19 @@ app.listen(port, () => {
 });
 
 app.get("/", (req, res) => {
-  res.send("texto");
+  res.send("<h1>API de gestão de convidados do Festival de Inovação</h1>");
 });
 
 app.get("/casting", async (req, res) => {
   console.log("Rota /casting foi chamada");
 
-  try {
-    const data = await fs.readFile(filePath, "utf8");
+  let data = [];
 
-    res.send(data);
+  try {
+    data = await fs.readFile(filePath, "utf8");
+
+    res.json(JSON.parse(data)).status(200);
   } catch (err) {
-    res.status(500).send(`Erro ao ler o arquivo: ${err.message}`);
+    res.json(JSON.parse(data)).status(200);
   }
 });
