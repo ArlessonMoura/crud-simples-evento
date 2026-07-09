@@ -31,13 +31,32 @@ app.get("/casting", async (req, res) => {
 
     res.json(JSON.parse(data)).status(200);
   } catch (err) {
-    res.json(JSON.parse(data)).status(200);
+    res.send("Erro ao ler o arquivo: ", err).status(404);
   }
 });
 
 
 app.get("/casting/:id", async (req, res) => {
-  console.log(`Rota /casting/:id foi chamada para o id: ${req.params.id}`);
+  const guestID = req.params.id;
 
-  res.send("id");
+  console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
+
+  try {
+    const data = await fs.readFile(filePath, "utf8");
+
+    const transformData = JSON.parse(data);
+    const guest = transformData[guestID];
+
+    // console.log(" guest: '", guest, "'");
+
+    if (guest) {
+      res.json(guest).status(200);
+      return;
+    }
+
+    res.send(`O convidade de ID '${guestID}' não foi encontrado`).status(404);
+
+  } catch (err) {
+    res.send("Erro ao ler o arquivo: ", err).status(404);
+  }
 });
