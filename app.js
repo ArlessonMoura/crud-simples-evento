@@ -38,16 +38,18 @@ app.get("/casting", async (req, res) => {
   }
 });
 
-
 app.get("/casting/:id", async (req, res) => {
-  const guestID = req.params.id;
+  const guestID = Number(req.params.id);
 
   // console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
 
   const tempData = getGuestById(guestID);
+  // console.log(await tempData);
 
   if ((await tempData).result) {
     const guest = (await tempData).response;
+
+    // console.log(guest);
 
     if (guest) {
       res.json(guest).status(200);
@@ -108,7 +110,7 @@ app.post("/casting", (req, res) => {
 });
 
 app.put("/casting:id", (req, res) => {
-
+  
 });
 
 function validateRegisterData(data) {
@@ -128,11 +130,22 @@ function validateRegisterData(data) {
 
 async function getGuestById(id) {
   try {
-    const data = await fs.readFile(filePath, "utf8");
+    let data = await fs.readFile(filePath, "utf8");
 
     const transformData = JSON.parse(data);
 
-    return {"result": true, "response": transformData[id]};
+    // console.log(transformData);
+    let guest;
+
+    transformData.forEach((element) => {
+      // console.log(element, id);
+      if (element.id === id) {
+        guest = element;
+        return;
+      }
+    });
+
+    return {"result": true, "response": guest};
   } catch (err) {
     return {"result": false, "response": err};
   }
