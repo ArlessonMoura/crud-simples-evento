@@ -10,6 +10,7 @@ const port = 3000;
 const filePath = path.join(__dirname, 'casting.json');
 
 const secret = "nao-sei";
+const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 let currentToken = null;
 
@@ -103,9 +104,16 @@ app.post("/casting", (req, res) => {
   const { nomeCompleto, idade, participacao } = req.body;
   const { dataPresenca, nota } = participacao;
 
-  if (nomeCompleto && idade && participacao && dataPresenca && nota) {
-    
-  }
+  if (
+    validateFullName(nomeCompleto) && validateNumber(idade) && 
+    validateData(dataPresenca) && validateNumber(nota)
+  ) {
+    console.log(req.body);
+    res.send(req.body).status(201);
+    return;
+  };
+
+  res.send("Os dados informados estão incorretos ou incompletos").status(400);
 });
 
 //#region Validação de login
@@ -145,8 +153,81 @@ function generateToken() {
 
 //#region Validação de cadastro
 
-function validarNomeCompleto(nome) {
-  
+function validateFullName(nome) {
+  const partesNome = nome.trim().split(" ");
+  return (partesNome.length >= 2) ? true : false;
 }
 
+function validateNumber(n) {
+  return !Number.isNaN(Number(n));
+}
+
+function validateData(data) {
+  const partesData = data.split("/");
+
+  const [ day, month, year ] = partesData;
+
+  // console.log(day, month, year);
+
+  if (partesData.length !== 3) {
+    return false;
+  }
+
+  for (let i = 0; i < partesData.length; i++) {
+    if (!validateNumber(partesData[i])) {
+      return false;
+    }
+  }
+  
+  if (Number(day) > daysInMonth[Number(month) - 1] || Number(day) <= 0) {
+    return false;
+  }
+    
+  if (Number(month) > 12 || Number(month) <= 0) {
+    return false;
+  }
+
+  return true;
+}
+
+// console.log(validarData("32/12/2025"));
+
 //#endregion
+
+// function teste(req) {
+//   const informedToken = req.header.authorization;
+
+//   if (informedToken !== currentToken) {
+//     console.log("O token de autenticação enviado é inválido").status(400);
+//     return;
+//   }
+
+//   const { nomeCompleto, idade, participacao } = req.body;
+//   const { dataPresenca, nota } = participacao;
+
+//   if (
+//     validateFullName(nomeCompleto) && validateNumber(idade) && 
+//     validateData(dataPresenca) && validateNumber(nota)
+//   ) {
+//     console.log(req.body);
+//     return;
+//   };
+
+//   console.log("Os dados informados estão incorretos ou incompletos")//.status(400);
+// }
+
+// const a = { 
+//   "body" : {
+//     "nomeCompleto": "Lúcia Mendes",
+//     "idade": 1,
+//     "participacao": {
+//       "dataPresenca": "22/10/2024",
+//       "nota": 5
+//     }
+//   }, 
+//   "header" : {
+//     "authorization" : currentToken
+//     }
+// };
+
+// teste(a);
