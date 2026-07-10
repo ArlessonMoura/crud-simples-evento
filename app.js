@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const path = require('path');
 const { error } = require('console');
 const { json } = require('stream/consumers');
+const { stat } = require('fs');
 
 const app = express();
 const port = 3000;
@@ -117,12 +118,20 @@ app.put("/casting:id", async (req, res) => {
     return;
   }
 
+  const guestID = req.params.id;
   const data = validateRegisterData(req.body);
 
-  const tempGuest = getGuestById(req.params.id);
+  const tempGuest = getGuestById(guestID);
   if (data && (await tempGuest).result) {
     res.send((await tempGuest).response).status(200);
+    return;
   }
+
+  if ((await tempGuest).result === false) {
+    res.send(`O convidado de ID ${guestID} não foi encontrado`).status(400);
+  }
+
+  res.send("Os valores para atualização de cadastro estão incompletos ou incorretos").status(400);
 });
 
 function validateRegisterData(data) {
