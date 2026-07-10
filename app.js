@@ -109,8 +109,20 @@ app.post("/casting", (req, res) => {
   res.send("Os dados informados estão incorretos ou incompletos").status(400);
 });
 
-app.put("/casting:id", (req, res) => {
-  
+app.put("/casting:id", async (req, res) => {
+  const informedToken = req.header.authorization;
+
+  if (informedToken !== currentToken) {
+    res.send("o token de autenticação enviado é inválido").status(400);
+    return;
+  }
+
+  const data = validateRegisterData(req.body);
+
+  const tempGuest = getGuestById(req.params.id);
+  if (data && (await tempGuest).result) {
+    res.send((await tempGuest).response).status(200);
+  }
 });
 
 function validateRegisterData(data) {
