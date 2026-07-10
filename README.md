@@ -68,7 +68,7 @@ A aplicação deverá permitir:
 
 1. Clone o repositório
 
-- ``.
+- `Git Clone git@github.com:ArlessonMoura/crud-simples-evento.git`.
 - Entre na pasta do repositório que você acabou de clonar
 
 1. Instale as dependências [**Caso existam**]
@@ -104,13 +104,13 @@ A aplicação deverá permitir:
 
 1. Crie um novo `Pull Request` _(PR)_
 
-- Vá até a página de _Pull Requests_ do [repositório no GitHub]()
+- Vá até a página de _Pull Requests_ do [repositório no GitHub](https://github.com/ArlessonMoura/crud-simples-evento)
 - Clique no botão verde _"New pull request"_
 - Clique na caixa de seleção _"Compare"_ e escolha a sua branch **com atenção**
 - Clique no botão verde _"Create pull request"_
 - Adicione uma descrição para o _Pull Request_ e clique no botão verde _"Create pull request"_
 - **Não se preocupe em preencher mais nada por enquanto!**
-- Volte até a [página de _Pull Requests_ do repositório]() e confira que o seu _Pull Request_ está criado
+- Volte até a [página de _Pull Requests_ do repositório](https://github.com/ArlessonMoura/crud-simples-evento/pulls) e confira que o seu _Pull Request_ está criado
 
 ## Durante o desenvolvimento
 
