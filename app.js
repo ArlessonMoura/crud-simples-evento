@@ -44,13 +44,10 @@ app.get("/casting/:id", async (req, res) => {
 
   // console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
 
-  try {
-    const data = await fs.readFile(filePath, "utf8");
+  const tempData = getGuestById(guestID);
 
-    const transformData = JSON.parse(data);
-    const guest = transformData[guestID];
-
-    // console.log(" guest: '", guest, "'");
+  if ((await tempData).result) {
+    const guest = (await tempData).response;
 
     if (guest) {
       res.json(guest).status(200);
@@ -59,8 +56,8 @@ app.get("/casting/:id", async (req, res) => {
 
     res.send(`O convidade de ID '${guestID}' não foi encontrado`).status(404);
 
-  } catch (err) {
-    res.send("Erro ao ler o arquivo: ", err).status(404);
+  } else {
+    res.send("Erro ao ler o arquivo: ", (await tempData).result).status(404);
   }
 });
 
@@ -111,7 +108,7 @@ app.post("/casting", (req, res) => {
 });
 
 app.put("/casting:id", (req, res) => {
-  
+
 });
 
 function validateRegisterData(data) {
@@ -127,6 +124,18 @@ function validateRegisterData(data) {
   };
 
   return;
+}
+
+async function getGuestById(id) {
+  try {
+    const data = await fs.readFile(filePath, "utf8");
+
+    const transformData = JSON.parse(data);
+
+    return {"result": true, "response": transformData[id]};
+  } catch (err) {
+    return {"result": false, "response": err};
+  }
 }
 
 //#region Validação de login
