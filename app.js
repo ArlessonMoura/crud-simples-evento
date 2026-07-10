@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/casting", async (req, res) => {
-  console.log("Rota /casting foi chamada");
+  // console.log("Rota /casting foi chamada");
 
   let data = [];
 
@@ -42,7 +42,7 @@ app.get("/casting", async (req, res) => {
 app.get("/casting/:id", async (req, res) => {
   const guestID = req.params.id;
 
-  console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
+  // console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
 
   try {
     const data = await fs.readFile(filePath, "utf8");
@@ -101,20 +101,33 @@ app.post("/casting", (req, res) => {
     return;
   }
 
-  const { nomeCompleto, idade, participacao } = req.body;
+  const data = validateRegisterData(req.body);
+
+  if (data) {
+    res.send(data).status(201);
+  }
+
+  res.send("Os dados informados estão incorretos ou incompletos").status(400);
+});
+
+app.put("/casting:id", (req, res) => {
+  
+});
+
+function validateRegisterData(data) {
+  const { nomeCompleto, idade, participacao } = data;
   const { dataPresenca, nota } = participacao;
 
   if (
     validateFullName(nomeCompleto) && validateNumber(idade) && 
     validateData(dataPresenca) && validateNumber(nota)
   ) {
-    console.log(req.body);
-    res.send(req.body).status(201);
-    return;
+    // console.log(req.body);
+    return data;
   };
 
-  res.send("Os dados informados estão incorretos ou incompletos").status(400);
-});
+  return;
+}
 
 //#region Validação de login
 
@@ -145,7 +158,7 @@ function validatePassword(password) {
 
 function generateToken() {
   const token = crypto.randomBytes(8).toString("hex");
-  console.log(token);
+  // console.log(token);
   return token;
 }
 
