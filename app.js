@@ -24,7 +24,7 @@ app.listen(port, () => {
 
 //CRUD - É um acrônimo para Create, Read, Update e Delete.
 
-// CREATE
+// CREATE - Q4
 app.post('/casting', nameValidation, ageValidation, castingValidation, tokenValidation, async (req, res) => {
   try {
     const infoObject = await fs.writeFile(
@@ -40,8 +40,7 @@ app.post('/casting', nameValidation, ageValidation, castingValidation, tokenVali
   }
 });
 
-
-// READ ALL
+// READ ALL - Q1
 app.get('/casting', async (_req, res) => {
   let talkers = [];
 
@@ -53,7 +52,7 @@ app.get('/casting', async (_req, res) => {
   }
 });
 
-// READ BY ID
+// READ BY ID - Q2
 app.get('/casting/:id', async (req, res) => {
   let talkers = [];
   const userId = Number(req.params.id);
@@ -72,18 +71,51 @@ app.get('/casting/:id', async (req, res) => {
   }
 });
 
-
-
-// LOGIN
+// LOGIN - Q3
 app.post('/login', emailValidation, passwordValidation, async (_req, res) => {
   const token = crypto.randomBytes(8).toString('hex');
 
   try {
     return res.status(200).json({ token });
-
-    
   } catch (error) {
     return res.status(400).send(`No momento não conseguimos efetuar seu login: ${error}`);
   }
 });
 
+// PUT - Q5
+app.put('/casting/:id', nameValidation, ageValidation, castingValidation, async (req, res) => {
+  let talkers = [];
+  const userId = Number(req.params.id);
+
+  try {
+    talkers = await fs.readFile(filePath, 'utf8');
+    let parseTalkers = await JSON.parse(talkers);
+    
+    const guestID = parseTalkers.findIndex(({ id }) => {
+      return id === userId;
+    })
+
+    if(guestID == -1) {
+      return res.status(404).send(`O convidado não consta em nossa lista.`);
+    }
+
+    const newGuest = {
+      "id": userId,
+      "nomeCompleto": req.body.nomeCompleto,
+      "idade": req.body.idade,
+      "participacao": req.body.participacao
+    }
+
+    parseTalkers[guestID] = newGuest;
+    
+    const infoObject = await fs.writeFile(
+      filePath,
+      JSON.stringify(parseTalkers, null, 2),
+      'utf8',
+    );
+    
+    res.status(200).json(infoObject);
+  } catch (error) {
+    res.status(404).send(`Error ao ler o arquivo: ${error}`);
+  }
+});
