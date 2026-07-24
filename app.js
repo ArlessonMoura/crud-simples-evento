@@ -89,7 +89,12 @@ app.get('/casting/search', async (req, res) => {
   try {
     const nome = req.query.q;
 
+    
     talkers = await fs.readFile(filePath, 'utf8');
+    
+    if (!nome) {
+      return res.status(200).send(JSON.parse(talkers));
+    }
 
     const guest = JSON.parse(talkers).find(({ nomeCompleto }) => {
       const nomeCompletoAjustado = nomeCompleto.toLowerCase().replaceAll(" ", "");
