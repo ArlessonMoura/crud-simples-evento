@@ -25,7 +25,7 @@ app.listen(port, () => {
 //CRUD - É um acrônimo para Create, Read, Update e Delete.
 
 // CREATE - Q4
-app.post('/casting', nameValidation, ageValidation, castingValidation, async (req, res) => {
+app.post('/casting', nameValidation, ageValidation, castingValidation, tokenValidation, async (req, res) => {
   try {
     let talkers = [];
 
@@ -140,7 +140,7 @@ app.post('/login', emailValidation, passwordValidation, async (_req, res) => {
 });
 
 // PUT - Q5
-app.put('/casting/:id', nameValidation, ageValidation, castingValidation, async (req, res) => {
+app.put('/casting/:id', nameValidation, ageValidation, castingValidation, tokenValidation, async (req, res) => {
   let talkers = [];
   const userId = Number(req.params.id);
 
@@ -178,7 +178,7 @@ app.put('/casting/:id', nameValidation, ageValidation, castingValidation, async 
 });
 
 // DELETE - Q6
-app.delete('/casting/:id', async (req, res) => {
+app.delete('/casting/:id', tokenValidation, async (req, res) => {
   let talkers = [];
   const userId = Number(req.params.id);
 
