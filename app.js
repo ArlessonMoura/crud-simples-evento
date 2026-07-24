@@ -2,18 +2,18 @@ const express = require('express');
 const fs = require('fs').promises;
 const crypto = require('crypto');
 const path = require('path');
-const { error } = require('console');
-const { json } = require('stream/consumers');
-const { stat } = require('fs');
+const {
+  emailValidation,
+  passwordValidation,
+  nameValidation,
+  ageValidation,
+  castingValidation,
+  tokenValidation,
+} = require('./middleware/validations');
 
 const app = express();
 const port = 3000;
 const filePath = path.join(__dirname, 'casting.json');
-
-const secret = "nao-sei";
-const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-let currentToken = null;
 
 app.use(express.json());
 
@@ -21,269 +21,69 @@ app.listen(port, () => {
   console.log(`API de gestão de convidados iniciada na porta ${port}`);
 });
 
-app.get("/", (req, res) => {
-  res.send("<h1>API de gestão de convidados do Festival de Inovação</h1>");
+
+//CRUD - É um acrônimo para Create, Read, Update e Delete.
+
+// CREATE
+app.post('/casting', nameValidation, ageValidation, castingValidation, tokenValidation, async (req, res) => {
+  try {
+    const infoObject = await fs.writeFile(
+      filePath,
+      JSON.stringify(req.body, null, 2),
+      'utf8',
+    );
+    res.status(201).json(req.body);
+
+    console.log(infoObject)
+  } catch (error) {
+    res.status(400).send(`Error ao ler o arquivo: ${error}`);
+  }
 });
 
-app.get("/casting", async (req, res) => {
-  // console.log("Rota /casting foi chamada");
 
-  let data = [];
+// READ ALL
+app.get('/casting', async (_req, res) => {
+  let talkers = [];
 
   try {
-    data = await fs.readFile(filePath, "utf8");
-
-    res.json(JSON.parse(data)).status(200);
-  } catch (err) {
-    res.send("Erro ao ler o arquivo: ", err).status(404);
+    talkers = await fs.readFile(filePath, 'utf8');
+    res.status(200).json(JSON.parse(talkers));
+  } catch (error) {
+    res.status(404).send(`Error ao ler o arquivo: ${error}`);
   }
 });
 
-app.get("/casting/:id", async (req, res) => {
-  const guestID = Number(req.params.id);
-
-  // console.log(`Rota /casting/:id foi chamada para o id: ${guestID}`);
-
-  const tempData = getGuestById(guestID);
-  // console.log(await tempData);
-
-  if ((await tempData).result) {
-    const guest = (await tempData).response;
-
-    // console.log(guest);
-
-    if (guest) {
-      res.json(guest).status(200);
-      return;
-    }
-
-    res.send(`O convidade de ID '${guestID}' não foi encontrado`).status(404);
-
-  } else {
-    res.send("Erro ao ler o arquivo: ", (await tempData).result).status(404);
-  }
-});
-
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  if (typeof email === "undefined") {
-    res.send("O campo de email não foi preenchido, retornado um valor indefinido").status(400);
-    return;
-  }
-
-  if (typeof password === "undefined") {
-    res.send("O campó de senha não foi preenchido, retornando um valor idefinido").status(400);
-    return;
-  }
-
-  if (!validateEmail(email)) {
-    res.send("O email informado é inválido, por favor insira um email válido").status(400);
-    return;
-  }
-
-  if (!validatePassword(password)) {
-    res.send("A senha informada é invalida. A senha deve conter pelo menos 6 caractéres").status(400);
-    return;
-  }
-
-  currentToken = generateToken();
-
-  res.send(`Login efetuado com sucesso com o token: "${currentToken}" gerado`).status(200);
-
-});
-
-app.post("/casting", (req, res) => {
-  const informedToken = req.header.authorization;
-
-  if (informedToken !== currentToken) {
-    res.send("O token de autenticação enviado é inválido").status(400);
-    return;
-  }
-
-  const data = validateRegisterData(req.body);
-
-  if (data) {
-    res.send(data).status(201);
-  }
-
-  res.send("Os dados informados estão incorretos ou incompletos").status(400);
-});
-
-app.put("/casting:id", async (req, res) => {
-  const informedToken = req.header.authorization;
-
-  if (informedToken !== currentToken) {
-    res.send("o token de autenticação enviado é inválido").status(400);
-    return;
-  }
-
-  const guestID = req.params.id;
-  const data = validateRegisterData(req.body);
-
-  const tempGuest = getGuestById(guestID);
-  if (data && (await tempGuest).result) {
-    res.send((await tempGuest).response).status(200);
-    return;
-  }
-
-  if ((await tempGuest).result === false) {
-    res.send(`O convidado de ID ${guestID} não foi encontrado`).status(400);
-  }
-
-  res.send("Os valores para atualização de cadastro estão incompletos ou incorretos").status(400);
-});
-
-function validateRegisterData(data) {
-  const { nomeCompleto, idade, participacao } = data;
-  const { dataPresenca, nota } = participacao;
-
-  if (
-    validateFullName(nomeCompleto) && validateNumber(idade) && 
-    validateData(dataPresenca) && validateNumber(nota)
-  ) {
-    // console.log(req.body);
-    return data;
-  };
-
-  return;
-}
-
-async function getGuestById(id) {
+// READ BY ID
+app.get('/casting/:id', async (req, res) => {
+  let talkers = [];
+  const userId = Number(req.params.id);
   try {
-    let data = await fs.readFile(filePath, "utf8");
+    talkers = await fs.readFile(filePath, 'utf8');
+    const guest = JSON.parse(talkers).find(({ id }) => {
+      return id === userId;
+    })
 
-    const transformData = JSON.parse(data);
-
-    // console.log(transformData);
-    let guest;
-
-    transformData.forEach((element) => {
-      // console.log(element, id);
-      if (element.id === id) {
-        guest = element;
-        return;
-      }
-    });
-
-    return {"result": true, "response": guest};
-  } catch (err) {
-    return {"result": false, "response": err};
-  }
-}
-
-//#region Validação de login
-
-function validateEmail(email) {
-  const emailParts = email.split("@");
-
-  if (emailParts.length !== 2) {
-    return false;
-  }
-
-  const emailName = emailParts[0];
-  const emailDomain = emailParts[1];
-
-  if ((emailName.length > 0) && emailDomain.includes(".") && (emailDomain.length >= 3)) {
-    return true;
-  }
-
-  return false;
-}
-
-// console.log("teste validação email: " + validateEmail("teste@gmail@com"));
-
-function validatePassword(password) {
-  return (password.length >= 6) ? true : false;
-}
-
-// console.log("teste validação senha: " + validatePassword("123456"));
-
-function generateToken() {
-  const token = crypto.randomBytes(8).toString("hex");
-  // console.log(token);
-  return token;
-}
-
-//#endregion
-
-//#region Validação de cadastro
-
-function validateFullName(nome) {
-  const partesNome = nome.trim().split(" ");
-  return (partesNome.length >= 2) ? true : false;
-}
-
-function validateNumber(n) {
-  return !Number.isNaN(Number(n));
-}
-
-function validateData(data) {
-  const partesData = data.split("/");
-
-  const [ day, month, year ] = partesData;
-
-  // console.log(day, month, year);
-
-  if (partesData.length !== 3) {
-    return false;
-  }
-
-  for (let i = 0; i < partesData.length; i++) {
-    if (!validateNumber(partesData[i])) {
-      return false;
+    if(!guest) {
+      return res.status(404).send(`O convidado não consta em nossa lista.`);
     }
+    res.status(200).json(guest);
+  } catch (error) {
+    res.status(404).send(`Error ao ler o arquivo: ${error}`);
   }
-  
-  if (Number(day) > daysInMonth[Number(month) - 1] || Number(day) <= 0) {
-    return false;
-  }
+});
+
+
+
+// LOGIN
+app.post('/login', emailValidation, passwordValidation, async (_req, res) => {
+  const token = crypto.randomBytes(8).toString('hex');
+
+  try {
+    return res.status(200).json({ token });
+
     
-  if (Number(month) > 12 || Number(month) <= 0) {
-    return false;
+  } catch (error) {
+    return res.status(400).send(`No momento não conseguimos efetuar seu login: ${error}`);
   }
+});
 
-  return true;
-}
-
-// console.log(validarData("32/12/2025"));
-
-//#endregion
-
-// function teste(req) {
-//   const informedToken = req.header.authorization;
-
-//   if (informedToken !== currentToken) {
-//     console.log("O token de autenticação enviado é inválido").status(400);
-//     return;
-//   }
-
-//   const { nomeCompleto, idade, participacao } = req.body;
-//   const { dataPresenca, nota } = participacao;
-
-//   if (
-//     validateFullName(nomeCompleto) && validateNumber(idade) && 
-//     validateData(dataPresenca) && validateNumber(nota)
-//   ) {
-//     console.log(req.body);
-//     return;
-//   };
-
-//   console.log("Os dados informados estão incorretos ou incompletos")//.status(400);
-// }
-
-// const a = { 
-//   "body" : {
-//     "nomeCompleto": "Lúcia Mendes",
-//     "idade": 1,
-//     "participacao": {
-//       "dataPresenca": "22/10/2024",
-//       "nota": 5
-//     }
-//   }, 
-//   "header" : {
-//     "authorization" : currentToken
-//     }
-// };
-
-// teste(a);

@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
-    "express": "^5.2.1",
-    "nodemon": "^3.1.14"
+    "express": "^5.2.1"
   }
 }
