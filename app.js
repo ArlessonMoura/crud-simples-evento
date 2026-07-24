@@ -34,7 +34,6 @@ app.post('/casting', nameValidation, ageValidation, castingValidation, tokenVali
     );
     res.status(201).json(req.body);
 
-    console.log(infoObject)
   } catch (error) {
     res.status(400).send(`Error ao ler o arquivo: ${error}`);
   }
@@ -47,6 +46,26 @@ app.get('/casting', async (_req, res) => {
   try {
     talkers = await fs.readFile(filePath, 'utf8');
     res.status(200).json(JSON.parse(talkers));
+  } catch (error) {
+    res.status(404).send(`Error ao ler o arquivo: ${error}`);
+  }
+});
+
+// BUSCAR POR NOME GET - Q7
+app.get('/casting/search', async (req, res) => {
+  try {
+    const nome = req.query.q;
+
+    talkers = await fs.readFile(filePath, 'utf8');
+
+    const guest = JSON.parse(talkers).find(({ nomeCompleto }) => {
+      const nomeCompletoAjustado = nomeCompleto.toLowerCase().replaceAll(" ", "");
+      const nomeAjustado = nome.toLowerCase().replaceAll(" ", "");
+
+      return nomeCompletoAjustado.includes(nomeAjustado);
+    });
+    
+    res.status(200).send(guest);
   } catch (error) {
     res.status(404).send(`Error ao ler o arquivo: ${error}`);
   }
@@ -141,8 +160,6 @@ app.delete('/casting/:id', async (req, res) => {
 
     parseTalkers.splice(guestID, 1);
 
-    console.log(parseTalkers);
-    
     await fs.writeFile(
       filePath,
       JSON.stringify(parseTalkers, null, 2),
