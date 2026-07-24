@@ -25,14 +25,47 @@ app.listen(port, () => {
 //CRUD - É um acrônimo para Create, Read, Update e Delete.
 
 // CREATE - Q4
-app.post('/casting', nameValidation, ageValidation, castingValidation, tokenValidation, async (req, res) => {
+app.post('/casting', nameValidation, ageValidation, castingValidation, async (req, res) => {
   try {
+    let talkers = [];
+
+    talkers = await fs.readFile(filePath, 'utf8');
+    let parseTalkers = await JSON.parse(talkers);
+
+    parseTalkers.sort((a, b) => a.id - b.id);
+
+    let usedIds = [];
+
+    parseTalkers.forEach(({ id }) => {
+      usedIds.push(id);
+    });
+
+    let userId = usedIds.length + 1;
+
+    for (let i = 0; i < usedIds.length; i++) {
+      if (i + 1 !== usedIds[i]) {
+        userId = i + 1;
+        break;
+      }
+    }
+
+    console.log(usedIds, userId);
+
+    const newGuest = {
+      "id": userId,
+      "nomeCompleto": req.body.nomeCompleto,
+      "idade": req.body.idade,
+      "participacao": req.body.participacao
+    }
+
+    parseTalkers.push(newGuest);
+    
     const infoObject = await fs.writeFile(
       filePath,
-      JSON.stringify(req.body, null, 2),
+      JSON.stringify(parseTalkers, null, 2),
       'utf8',
     );
-    res.status(201).json(req.body);
+    res.status(201).json(newGuest);
 
   } catch (error) {
     res.status(400).send(`Error ao ler o arquivo: ${error}`);
