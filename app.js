@@ -93,7 +93,7 @@ app.put('/casting/:id', nameValidation, ageValidation, castingValidation, async 
     
     const guestID = parseTalkers.findIndex(({ id }) => {
       return id === userId;
-    })
+    });
 
     if(guestID == -1) {
       return res.status(404).send(`O convidado não consta em nossa lista.`);
@@ -114,7 +114,42 @@ app.put('/casting/:id', nameValidation, ageValidation, castingValidation, async 
       'utf8',
     );
     
-    res.status(200).json(infoObject);
+    res.status(200).json(parseTalkers);
+  } catch (error) {
+    res.status(404).send(`Error ao ler o arquivo: ${error}`);
+  }
+});
+
+// DELETE - Q6
+app.delete('/casting/:id', async (req, res) => {
+  let talkers = [];
+  const userId = Number(req.params.id);
+
+  try {
+    talkers = await fs.readFile(filePath, 'utf8');
+    let parseTalkers = await JSON.parse(talkers);
+    
+    const guestID = parseTalkers.findIndex(({ id }) => {
+      return id === userId;
+    });
+
+    if(guestID === -1) {
+      return res.status(404).send(`O convidado não consta em nossa lista.`);
+    }
+
+    const { nomeCompleto } = parseTalkers[guestID];
+
+    parseTalkers.splice(guestID, 1);
+
+    console.log(parseTalkers);
+    
+    await fs.writeFile(
+      filePath,
+      JSON.stringify(parseTalkers, null, 2),
+      'utf8',
+    );
+    
+    res.status(200).json(`O convidado de ID ${userId}, ${nomeCompleto}, foi removido do banco de dados`);
   } catch (error) {
     res.status(404).send(`Error ao ler o arquivo: ${error}`);
   }
